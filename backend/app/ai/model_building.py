@@ -28,10 +28,6 @@ models = {
     #     'n_estimators': [10, 100, 200],
     #     'max_depth': [None, 10, 20]
     # }),
-    # 'k-Nearest Neighbors': (KNeighborsClassifier(), {
-    #     'n_neighbors': [3, 5, 11],
-    #     'weights': ['uniform', 'distance']
-    # }),
     'Decision Tree': (DecisionTreeClassifier(), {
         'max_depth': [None, 10, 20],
         'min_samples_split': [2, 5, 10]
