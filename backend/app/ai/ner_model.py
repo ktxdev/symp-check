@@ -6,6 +6,10 @@ import pandas as pd
 from spacy.training import Example
 from spacy.util import minibatch, compounding
 
+MODELS_DIR = 'data/models'
+NER_MODEL_PATH = f'{MODELS_DIR}/er_symptom_model'
+SYMPTOM_LABEL = "SYMPTOM"
+
 def preprocess_data(df):
     train_data = []
 
@@ -25,7 +29,7 @@ def train_ner_model(data):
     ner = nlp.get_pipe("ner")
 
     # Add the new entity label
-    ner.add_label("SYMPTOM")
+    ner.add_label(SYMPTOM_LABEL)
 
     # Disable other pipeline components during training
     other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
@@ -45,6 +49,11 @@ def train_ner_model(data):
                 
             print("Losses", losses)
 
+def extract_symptoms_from_text(text):
+    nlp = spacy.load(NER_MODEL_PATH)
+    doc = nlp(text)
+    return [ent.text for ent in doc.ents if ent.label_ == SYMPTOM_LABEL]
+
 
 if __name__ == "__main__":
 
@@ -57,5 +66,5 @@ if __name__ == "__main__":
     train_ner_model(data)
 
     # Save model
-    os.makedirs('data/models', exist_ok=True)
-    nlp.to_disk("data/models/er_symptom_model")
+    os.makedirs(MODELS_DIR, exist_ok=True)
+    nlp.to_disk(NER_MODEL_PATH)
