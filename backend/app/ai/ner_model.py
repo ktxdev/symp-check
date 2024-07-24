@@ -1,4 +1,5 @@
 import os
+import re
 import spacy
 import random
 import pandas as pd
@@ -10,21 +11,31 @@ MODELS_DIR = 'data/models'
 NER_MODEL_PATH = f'{MODELS_DIR}/er_symptom_model'
 SYMPTOM_LABEL = "SYMPTOM"
 
+def preprocess_symptom(symptom):
+    symptom = re.sub(r'\s*\band\b\s*', ', ', symptom).strip()
+    split_text = re.split(r'\s*,\s*', symptom)
+    return [part for part in split_text if part]
+
 def preprocess_data(df):
     train_data = []
 
     for _, row in df.iterrows():
-        symptom = row['symptom']
+        symptoms = preprocess_symptom(row['symptoms'])
         sentence = row['sentence']
 
-        start_index = sentence.index(symptom)
-        end_index = start_index + len(symptom)
+        entities = []
+        for symptom in symptoms:
+            start_index = sentence.index(symptom)
+            end_index = start_index + len(symptom)
 
-        train_data.append((sentence, {"entities": [(start_index, end_index, 'SYMPTOM')]}))
+            entities.append((start_index, end_index, 'SYMPTOM'))
+
+        train_data.append((sentence, {"entities": entities}))
 
     return train_data
 
-def train_ner_model(data):
+def train_ner_model(data, nlp):
+
     # Get the pipeline component
     ner = nlp.get_pipe("ner")
 
@@ -56,14 +67,13 @@ def extract_symptoms_from_text(text):
 
 
 if __name__ == "__main__":
-
     df = pd.read_csv("https://raw.githubusercontent.com/ktxdev/symp-check/main/backend/data/processed/symptoms_sentences.csv")
 
     data = preprocess_data(df)
 
     nlp = spacy.load("en_core_web_sm")
 
-    train_ner_model(data)
+    train_ner_model(data, nlp)
 
     # Save model
     os.makedirs(MODELS_DIR, exist_ok=True)
