@@ -28,6 +28,7 @@ def save_model(model, filename, dirpath = ''):
         
     joblib.dump(model, f"{dirpath}/{filename}")
 
+
 if __name__ == "__main__":
     data = load_data("https://raw.githubusercontent.com/ktxdev/symp-check/main/backend/data/processed/symptoms_disease.csv")
 
